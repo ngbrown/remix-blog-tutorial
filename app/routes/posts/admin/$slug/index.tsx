@@ -2,6 +2,7 @@ import type { ActionFunction, LoaderFunction } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import {
   Form,
+  Link,
   useActionData,
   useLoaderData,
   useTransition,
@@ -68,7 +69,7 @@ export default function UpdatePost() {
   const errors = useActionData<ActionData>();
 
   const transition = useTransition();
-  const isCreating = Boolean(transition.submission);
+  const isUpdating = Boolean(transition.submission);
 
   return (
     <Form method="post">
@@ -118,13 +119,20 @@ export default function UpdatePost() {
           defaultValue={post.markdown}
         />
       </p>
-      <p className="text-right">
+      <p className="flex justify-between">
+        <Link
+          to="delete"
+          type="button"
+          className="rounded bg-red-500 py-2 px-4 text-white hover:bg-red-600 focus:bg-red-400 disabled:bg-red-300"
+        >
+          Delete Post
+        </Link>
         <button
           type="submit"
           className="rounded bg-blue-500 py-2 px-4 text-white hover:bg-blue-600 focus:bg-blue-400 disabled:bg-blue-300"
-          disabled={isCreating}
+          disabled={isUpdating}
         >
-          {isCreating ? "Creating..." : "Create Post"}
+          {isUpdating ? "Updating..." : "Update Post"}
         </button>
       </p>
     </Form>
