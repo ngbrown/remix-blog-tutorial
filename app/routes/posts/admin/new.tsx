@@ -45,7 +45,7 @@ export const action: ActionFunction = async ({ request }) => {
   invariant(typeof markdown === "string", "markdown must be a string");
 
   try {
-    throw new Error("some error");
+    throw new Error("TODO: Remove - some error");
     await createPost({ title, slug, markdown });
 
     return redirect("/posts/admin");
@@ -66,7 +66,7 @@ export default function NewPost() {
   const isCreating = Boolean(transition.submission);
 
   return isCreating ? (
-    <AdminIndex />
+    <AdminIndex isOptimistic={true} />
   ) : (
     <>
       <Form method="post">

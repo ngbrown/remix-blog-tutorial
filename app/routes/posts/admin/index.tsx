@@ -1,11 +1,19 @@
 import { Link } from "@remix-run/react";
 
-export default function AdminIndex() {
+type Props = { isOptimistic?: boolean };
+
+export default function AdminIndex(props: Props) {
   return (
     <p>
-      <Link to="new" className="text-blue-600 underline">
-        Create a New Post
-      </Link>
+      {props.isOptimistic ? (
+        <span className="text-gray-600 underline hover:cursor-pointer">
+          Create a New Post
+        </span>
+      ) : (
+        <Link to="new" className="text-blue-600 underline">
+          Create a New Post
+        </Link>
+      )}
     </p>
   );
 }
