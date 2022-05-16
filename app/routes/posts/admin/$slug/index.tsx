@@ -72,7 +72,7 @@ export default function UpdatePost() {
   const isUpdating = Boolean(transition.submission);
 
   return (
-    <Form method="post">
+    <Form method="post" key={post.slug}>
       <p>
         <label>
           Post Title:{" "}
@@ -112,7 +112,6 @@ export default function UpdatePost() {
         <br />
         <textarea
           id="markdown"
-          key={post.slug}
           rows={20}
           name="markdown"
           className={`${inputClassName} font-mono`}
