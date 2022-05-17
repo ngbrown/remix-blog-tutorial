@@ -4,6 +4,8 @@ import { Form, useActionData, useTransition } from "@remix-run/react";
 import { createPost } from "~/models/post.server";
 import invariant from "tiny-invariant";
 import AdminIndex from "~/routes/posts/admin/index";
+import type { FormEvent } from "react";
+import { useState } from "react";
 
 type ActionData =
   | {
@@ -45,7 +47,6 @@ export const action: ActionFunction = async ({ request }) => {
   invariant(typeof markdown === "string", "markdown must be a string");
 
   try {
-    throw new Error("TODO: Remove - some error");
     await createPost({ title, slug, markdown });
 
     return redirect("/posts/admin");
@@ -65,6 +66,19 @@ export default function NewPost() {
   const transition = useTransition();
   const isCreating = Boolean(transition.submission);
 
+  const [formData, setFormData] = useState({
+    title: "",
+    slug: "",
+    markdown: "",
+  });
+
+  function handleChange(
+    event: FormEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) {
+    const { name, value } = event.currentTarget;
+    setFormData({ ...formData, [name]: value });
+  }
+
   return isCreating ? (
     <AdminIndex isOptimistic={true} />
   ) : (
@@ -76,7 +90,13 @@ export default function NewPost() {
             {errors?.title ? (
               <em className="text-red-600">{errors.title}</em>
             ) : null}
-            <input type="text" name="title" className={inputClassName} />
+            <input
+              type="text"
+              name="title"
+              className={inputClassName}
+              value={formData.title}
+              onChange={handleChange}
+            />
           </label>
         </p>
         <p>
@@ -85,7 +105,13 @@ export default function NewPost() {
             {errors?.slug ? (
               <em className="text-red-600">{errors.slug}</em>
             ) : null}
-            <input type="text" name="slug" className={inputClassName} />
+            <input
+              type="text"
+              name="slug"
+              className={inputClassName}
+              value={formData.slug}
+              onChange={handleChange}
+            />
           </label>
         </p>
         <p>
@@ -101,6 +127,8 @@ export default function NewPost() {
             rows={20}
             name="markdown"
             className={`${inputClassName} font-mono`}
+            value={formData.markdown}
+            onChange={handleChange}
           />
         </p>
         <p className="text-right">
