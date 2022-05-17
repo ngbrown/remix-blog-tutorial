@@ -4,23 +4,20 @@ import { Form, useActionData, useTransition } from "@remix-run/react";
 import { createPost } from "~/models/post.server";
 import invariant from "tiny-invariant";
 import AdminIndex from "~/routes/posts/admin/index";
-import type { FormEvent } from "react";
-import { useState } from "react";
 
-type ActionData =
-  | {
-      title: null | string;
-      slug: null | string;
-      markdown: null | string;
-      error?: never;
-    }
-  | {
-      title?: never;
-      slug?: never;
-      markdown?: never;
-      error: null | string;
-    }
-  | undefined;
+type ActionData = {
+  values: {
+    title: FormDataEntryValue | null;
+    slug: FormDataEntryValue | null;
+    markdown: FormDataEntryValue | null;
+  };
+  errors: {
+    title?: null | string;
+    slug?: null | string;
+    markdown?: null | string;
+    error?: null | string;
+  };
+};
 
 export const action: ActionFunction = async ({ request }) => {
   // TODO: remove me
@@ -32,14 +29,23 @@ export const action: ActionFunction = async ({ request }) => {
   const slug = formData.get("slug");
   const markdown = formData.get("markdown");
 
-  const errors: ActionData = {
-    title: title ? null : "Title is required",
-    slug: slug ? null : "Slug is required",
-    markdown: markdown ? null : "Markdown is required",
+  const actionFailed: ActionData = {
+    values: {
+      title,
+      slug,
+      markdown,
+    },
+    errors: {
+      title: title ? null : "Title is required",
+      slug: slug ? null : "Slug is required",
+      markdown: markdown ? null : "Markdown is required",
+    },
   };
-  const hasErrors = Object.values(errors).some((errorMessage) => errorMessage);
+  const hasErrors = Object.values(actionFailed.errors).some(
+    (errorMessage) => errorMessage
+  );
   if (hasErrors) {
-    return json<ActionData>(errors);
+    return json<ActionData>(actionFailed);
   }
 
   invariant(typeof title === "string", "title must be a string");
@@ -51,33 +57,19 @@ export const action: ActionFunction = async ({ request }) => {
 
     return redirect("/posts/admin");
   } catch (err) {
-    return json<ActionData>(
-      { error: "Sorry, we couldn't create the post" },
-      { status: 500 }
-    );
+    actionFailed.errors.error = "Sorry, we couldn't create the post";
+    return json<ActionData>(actionFailed, { status: 500 });
   }
 };
 
 const inputClassName = `w-full rounded border border-gray-500 px-2 py-1 text-lg`;
 
 export default function NewPost() {
-  const errors = useActionData<ActionData>();
+  const failedSubmit = useActionData<ActionData>();
+  const errors = failedSubmit?.errors;
 
   const transition = useTransition();
   const isCreating = Boolean(transition.submission);
-
-  const [formData, setFormData] = useState({
-    title: "",
-    slug: "",
-    markdown: "",
-  });
-
-  function handleChange(
-    event: FormEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) {
-    const { name, value } = event.currentTarget;
-    setFormData({ ...formData, [name]: value });
-  }
 
   return isCreating ? (
     <AdminIndex isOptimistic={true} />
@@ -94,8 +86,11 @@ export default function NewPost() {
               type="text"
               name="title"
               className={inputClassName}
-              value={formData.title}
-              onChange={handleChange}
+              defaultValue={
+                typeof failedSubmit?.values.title === "string"
+                  ? failedSubmit.values.title
+                  : undefined
+              }
             />
           </label>
         </p>
@@ -109,8 +104,11 @@ export default function NewPost() {
               type="text"
               name="slug"
               className={inputClassName}
-              value={formData.slug}
-              onChange={handleChange}
+              defaultValue={
+                typeof failedSubmit?.values.slug === "string"
+                  ? failedSubmit.values.slug
+                  : undefined
+              }
             />
           </label>
         </p>
@@ -127,8 +125,11 @@ export default function NewPost() {
             rows={20}
             name="markdown"
             className={`${inputClassName} font-mono`}
-            value={formData.markdown}
-            onChange={handleChange}
+            defaultValue={
+              typeof failedSubmit?.values.markdown === "string"
+                ? failedSubmit.values.markdown
+                : undefined
+            }
           />
         </p>
         <p className="text-right">
