@@ -1,7 +1,7 @@
 import { Link } from "@remix-run/react";
 
 type Props = { isOptimistic?: boolean };
-
+//
 export default function AdminIndex(props: Props) {
   return (
     <p>
